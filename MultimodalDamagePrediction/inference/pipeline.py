@@ -4,6 +4,9 @@ from PIL import Image
 import yaml
 import os
 import numpy as np
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from data.pointcloud_io import load_point_cloud
 
 from models.image_encoder import ImageEncoder
 from models.pointcloud_encoder import PointCloudEncoder
@@ -71,14 +74,16 @@ class InferencePipeline:
             return torch.zeros((1, num_points, 3)).to(self.device)
         
         try:
-            points = np.load(pc_path)
+            # Supports .ply and .npy via shared loader
+            points = load_point_cloud(pc_path)  # [N, 3] float32
             if points.shape[0] >= num_points:
                 indices = np.random.choice(points.shape[0], num_points, replace=False)
             else:
                 indices = np.random.choice(points.shape[0], num_points, replace=True)
             points = points[indices, :]
             return torch.tensor(points, dtype=torch.float32).unsqueeze(0).to(self.device)
-        except:
+        except Exception as e:
+            print(f"Warning: Could not load point cloud '{pc_path}': {e}")
             return torch.zeros((1, num_points, 3)).to(self.device)
 
     def preprocess_metadata(self, meta_dict):

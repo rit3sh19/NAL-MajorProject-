@@ -5,6 +5,7 @@ from PIL import Image
 import torchvision.transforms as T
 import os
 import json
+from data.pointcloud_io import load_point_cloud
 
 class MultimodalDamageDataset(Dataset):
     """
@@ -49,8 +50,8 @@ class MultimodalDamageDataset(Dataset):
             return torch.zeros((self.config['dataset']['point_cloud_points'], 3))
         
         try:
-            # We assume point clouds have been preprocessed and saved as .npy [N, 3]
-            points = np.load(pc_path)
+            # Supports .ply and .npy via shared loader
+            points = load_point_cloud(pc_path)  # [N, 3] float32
             # Sample exactly fixed number of points
             num_points = self.config['dataset']['point_cloud_points']
             if points.shape[0] >= num_points:
@@ -59,7 +60,8 @@ class MultimodalDamageDataset(Dataset):
                 indices = np.random.choice(points.shape[0], num_points, replace=True)
             points = points[indices, :]
             return torch.tensor(points, dtype=torch.float32)
-        except Exception:
+        except Exception as e:
+            print(f"Warning: Could not load point cloud '{pc_path}': {e}")
             # Missing/Corrupted point cloud handling -> zero tensor
             return torch.zeros((self.config['dataset']['point_cloud_points'], 3))
         

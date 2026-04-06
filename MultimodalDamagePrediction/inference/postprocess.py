@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import torch
 
 def generate_heatmap(cscan_tensor):
     """

@@ -48,7 +48,7 @@ with tab1:
     with col1:
         st.subheader("Data Input")
         img_file = st.file_uploader("Upload Surface Dent Image (JPG/PNG)", type=['jpg', 'jpeg', 'png'])
-        pc_file = st.file_uploader("Upload 3D Point Cloud Data (.npy)", type=['npy'])
+        pc_file = st.file_uploader("Upload 3D Point Cloud Data (.ply / .npy)", type=['ply', 'npy'])
         
         st.markdown("### Metadata Parameters")
         c1, c2 = st.columns(2)
@@ -72,7 +72,9 @@ with tab1:
                     img = Image.open(img_file)
                     pc_path = None
                     if pc_file is not None:
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=".npy") as tmp:
+                        # Preserve the original extension so the loader detects format correctly
+                        pc_ext = os.path.splitext(pc_file.name)[1]  # e.g. '.ply' or '.npy'
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=pc_ext) as tmp:
                             tmp.write(pc_file.getvalue())
                             pc_path = tmp.name
                     
