@@ -1,0 +1,63 @@
+A to Z Guide: Running the Multimodal Damage Predictor
+=====================================================
+
+This guide will walk you through the absolute basics of getting this project running on your Windows machine, from installing dependencies to executing the AI UI.
+
+-----------------------------------------------------
+STEP 1: PRE-REQUISITES (Checking Python)
+-----------------------------------------------------
+You must have Python installed. 
+1. Open your "Command Prompt" (cmd) or "PowerShell" from the Windows Start menu.
+2. Type: `python --version` and press Enter.
+   - It should say something like "Python 3.9.x" or higher.
+   - If it says "python is not recognized", you need to download and install Python from python.org (Make sure to check "Add Python to PATH" during installation).
+
+-----------------------------------------------------
+STEP 2: NAVIGATING TO THE PROJECT
+-----------------------------------------------------
+1. In your Command Prompt, type the following command to move into your project folder:
+   cd "C:\Users\rksur\OneDrive\Desktop\nal project code\MultimodalDamagePrediction"
+2. Hit Enter. You are now inside the AI code directory!
+
+-----------------------------------------------------
+STEP 3: CREATING A VIRTUAL ENVIRONMENT (Recommended)
+-----------------------------------------------------
+A virtual environment keeps your AI project packages separate from other programs.
+1. Create the environment by typing:
+   python -m venv ai_env
+2. Wait a few seconds for it to create the folder.
+3. Activate the environment by typing:
+   ai_env\Scripts\activate
+   (You should now see `(ai_env)` at the beginning of your command prompt line!)
+
+-----------------------------------------------------
+STEP 4: INSTALLING REQUIRED LIBRARIES
+-----------------------------------------------------
+We need to install the AI and UI libraries like PyTorch, Streamlit, and NumPy.
+1. Ensure your virtual environment is activated.
+2. Run this exact command:
+   pip install -r requirements.txt
+3. Wait for all the packages to download and install (this may take 2-5 minutes depending on internet speed).
+
+-----------------------------------------------------
+STEP 5: RUNNING THE USER INTERFACE (DASHBOARD)
+-----------------------------------------------------
+To see the application visually and interact with it:
+1. In the command prompt (still inside the activated environment), type:
+   python main.py ui
+2. Press Enter. 
+3. A browser window will automatically pop up with the "Multimodal AI: Internal Damage Predictor" interface.
+   - If it doesn't pop up, look at the terminal output and copy the "Local URL" (usually http://localhost:8501) and paste it into Chrome/Edge.
+4. You can now use the UI! 
+   - SINGLE PREDICTION: Upload a dent image, point cloud, and fill out forms to generate a C-Scan.
+   - DATASET PROCESSING: Click the 2nd tab to test connecting a OneDrive dataset folder path.
+
+-----------------------------------------------------
+STEP 6: RUNNING THE AI TRAINING LOOP (Advanced)
+-----------------------------------------------------
+If you want to train the model from scratch on your own large datasets:
+1. Complete the dataset manifest JSON according to `dataset_instructions.txt`.
+2. Stop the Streamlit UI (click on your Command prompt and press CTRL+C).
+3. Type the following training command:
+   python main.py train
+4. The system will load your data from `data/processed` and start the neural network training epochs, printing out the losses. It automatically saves the `best_model.pth` in the `checkpoints` folder!

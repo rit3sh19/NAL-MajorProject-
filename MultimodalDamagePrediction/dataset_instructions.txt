@@ -1,0 +1,55 @@
+How to Integrate Your Dataset
+=================================
+
+To add your dataset, you'll need to place your data files into the `data/processed/` directory and create two JSON manifest files (`train_manifest.json` and `val_manifest.json`) that tell the dataloader exactly where to find everything for your training and validation splits.
+
+1. Organize your files
+-------------------------
+Put all of your raw data (Images, Point Clouds, and target C-Scan images) into `data/processed/` (or any other folder of your choice). Your point clouds should be preprocessed into NumPy `.npy` files with the shape `[N, 3]` to be loaded correctly.
+
+2. Create the JSON Manifest Files
+------------------------------------
+Create `train_manifest.json` and `val_manifest.json` inside the `data/processed/` folder. This file should contain a list of dictionaries where each item represents one data sample. 
+
+Here is exactly how the JSON format should look:
+
+[
+  {
+    "id": "sample_001",
+    "image_path": "data/processed/images/dent_001.jpg",
+    "pc_path": "data/processed/pointclouds/dent_001.npy",
+    "cscan_path": "data/processed/targets/cscan_001.png",
+    "metadata": {
+      "dent_depth": 2.5,
+      "damage_area": 15.2,
+      "thickness": 5.0,
+      "layup_sequence_encoded": 0.5,
+      "material_type_encoded": 0 
+    }
+  },
+  {
+    "id": "sample_002",
+    "image_path": "data/processed/images/dent_002.jpg",
+    "pc_path": "data/processed/pointclouds/dent_002.npy",
+    "cscan_path": "data/processed/targets/cscan_002.png",
+    "metadata": {
+      "dent_depth": 1.2,
+      "damage_area": 8.4,
+      "thickness": 4.5,
+      "layup_sequence_encoded": 0.7,
+      "material_type_encoded": 1 
+    }
+  }
+]
+
+Notes on Metadata Encoding:
+* "material_type_encoded" should be a number. For example: 0 for CFRP, 1 for GFRP, and 2 for Hybrid.
+* "layup_sequence_encoded" should be a numerical value mapping to the layup sequence complexity or simply label-encoded classes.
+
+3. Run the Training Script
+-----------------------------
+Once your `train_manifest.json` and `val_manifest.json` are inside `data/processed`, the system is ready to train! You can start training by running:
+
+python main.py train --config configs/config.yaml --data_dir data/processed
+
+(During training, it will automatically handle missing modalities by either zero-padding tensors or applying mean substitution, as implemented in `data/dataset.py`)
