@@ -103,12 +103,19 @@ class MultimodalDamageDataset(Dataset):
         # 4. Target C-Scan [1, 256, 256]
         cscan_path = sample_info.get('cscan_path')
         cscan_size = self.config['dataset']['cscan_size']
-        if self.split in ['train', 'val'] and cscan_path and os.path.exists(cscan_path):
+        if self.split in ['train', 'val']:
+            if not cscan_path or not os.path.exists(cscan_path):
+                raise ValueError(f"Missing C-Scan ground truth for training sample {sample_info.get('id', idx)} at {cscan_path}. In train/val splits, C-Scans are strictly required.")
             cscan_img = Image.open(cscan_path).convert('L')
             cscan_img = cscan_img.resize(tuple(cscan_size))
             cscan_tensor = T.ToTensor()(cscan_img)
         else:
-            cscan_tensor = torch.zeros((1, *cscan_size))
+            if cscan_path and os.path.exists(cscan_path):
+                cscan_img = Image.open(cscan_path).convert('L')
+                cscan_img = cscan_img.resize(tuple(cscan_size))
+                cscan_tensor = T.ToTensor()(cscan_img)
+            else:
+                cscan_tensor = torch.zeros((1, *cscan_size))
 
         return {
             "image": img_tensor,

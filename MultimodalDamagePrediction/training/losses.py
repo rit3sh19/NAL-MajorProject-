@@ -62,16 +62,16 @@ def dice_loss(pred, target, smooth=1.):
 
 class CompositeDamageLoss(nn.Module):
     """
-    Combined loss function: 0.4*MSE + 0.4*SSIM + 0.2*Dice
+    Combined loss function: 0.5*BCE + 0.3*Dice + 0.2*SSIM
     """
     def __init__(self):
         super(CompositeDamageLoss, self).__init__()
-        self.mse = nn.MSELoss()
+        self.bce = nn.BCELoss()
         self.ssim = SSIMLoss()
 
     def forward(self, pred, target):
-        loss_mse = self.mse(pred, target)
+        loss_bce = self.bce(pred, target)
         loss_ssim = self.ssim(pred, target)
         loss_dice = dice_loss(pred, target)
         
-        return 0.4 * loss_mse + 0.4 * loss_ssim + 0.2 * loss_dice
+        return 0.5 * loss_bce + 0.3 * loss_dice + 0.2 * loss_ssim

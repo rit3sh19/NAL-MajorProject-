@@ -35,6 +35,38 @@ class MultimodalTransformer(nn.Module):
         # Transformer mixing
         x = self.transformer(x)
         
-        # Output [B, 1536]
         x = x.flatten(start_dim=1)
         return x
+
+    def forward_with_attention(self, img_feat, pc_feat, meta_feat):
+        """
+        Returns the output along with intermediate layer outputs and attention matrices for visualization.
+        """
+        x = torch.stack([img_feat, pc_feat, meta_feat], dim=1)
+        x = x + self.pos_embedding
+        
+        layer_outputs = []
+        attn_maps = []
+        
+        x_iter = x
+        for layer in self.transformer.layers:
+            # We must replicate the forward pass of nn.TransformerEncoderLayer 
+            # to capture the attention weights (need_weights=True)
+            attn_input = layer.norm1(x_iter) if layer.norm_first else x_iter
+            attn_output, attn_weights = layer.self_attn(
+                attn_input, attn_input, attn_input, need_weights=True
+            )
+            
+            # The rest of the TransformerEncoderLayer (assuming not norm_first for standard PyTorch)
+            if not layer.norm_first:
+                x_iter = layer.norm1(x_iter + layer.dropout1(attn_output))
+                x_iter = layer.norm2(x_iter + layer.dropout2(layer.linear2(layer.dropout(layer.activation(layer.linear1(x_iter))))))
+            else:
+                x_iter = x_iter + layer.dropout1(attn_output)
+                x_iter = x_iter + layer.dropout2(layer.linear2(layer.dropout(layer.activation(layer.linear1(layer.norm2(x_iter))))))
+                
+            layer_outputs.append(x_iter.clone())
+            attn_maps.append(attn_weights.clone())
+            
+        fused = x_iter.flatten(start_dim=1)
+        return fused, layer_outputs, attn_maps

@@ -83,6 +83,11 @@ class Trainer:
             
             self.optimizer.zero_grad()
             
+            # Safety check for C-Scan targets to ensure we don't train on missing data
+            if target.sum() == 0 and target.shape[2] > 0:
+                print("Warning: Skipped batch due to empty C-Scan target (sum=0).")
+                continue
+                
             with torch.amp.autocast('cuda' if torch.cuda.is_available() else 'cpu'):
                 pred = self.model(img, pc, meta)
                 loss = self.criterion(pred, target)
